@@ -112,30 +112,70 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
             item.left = 0;
         });
 
-        // 4. Cluster Other Items (Foreground)
+        // 4. Cluster Other Items (Foreground) & Apply Column Packing
         const clusters: typeof otherItems[] = [];
         let currentCluster: typeof otherItems = [];
 
+        // 4a. Create Connect Groups
+        // We group items if they overlap at all with the *current group's extent*.
+        // Simple distinct clustering: if item starts after the max end of current cluster, it's a new cluster.
         otherItems.sort((a, b) => a.startMins - b.startMins).forEach(item => {
             if (currentCluster.length === 0) {
                 currentCluster.push(item);
             } else {
                 const clusterEnd = Math.max(...currentCluster.map(i => i.endMins));
-                if (item.startMins < clusterEnd) {
-                    currentCluster.push(item);
-                } else {
+                // If this item starts purely after the entire cluster ends, break the cluster.
+                // Otherwise it connects (even if indirectly via "Chain of Overlaps").
+                if (item.startMins >= clusterEnd) {
                     clusters.push(currentCluster);
                     currentCluster = [item];
+                } else {
+                    currentCluster.push(item);
                 }
             }
         });
         if (currentCluster.length > 0) clusters.push(currentCluster);
 
+        // 4b. Apply Column Packing per Cluster
         clusters.forEach(cluster => {
-            const count = cluster.length;
-            cluster.forEach((item, index) => {
-                item.width = 100 / count;
-                item.left = (100 / count) * index;
+            // Sort by start time (already sorted, but safe to ensure)
+            // If start times match, longer items should probably go first for better packing, but stability is fine.
+            cluster.sort((a, b) => {
+                if (a.startMins !== b.startMins) return a.startMins - b.startMins;
+                return (b.endMins - b.startMins) - (a.endMins - a.startMins);
+            });
+
+            const columns: number[] = []; // Stores the 'endMins' of the last item in each column.
+
+            cluster.forEach(item => {
+                // Find first column where this item fits (startMins >= column's endMins)
+                let colIndex = -1;
+                for (let i = 0; i < columns.length; i++) {
+                    if (columns[i] <= item.startMins) {
+                        colIndex = i;
+                        break;
+                    }
+                }
+
+                if (colIndex === -1) {
+                    // Create new column
+                    colIndex = columns.length;
+                    columns.push(item.endMins);
+                } else {
+                    // Update existing column
+                    columns[colIndex] = item.endMins;
+                }
+
+                // Store temporary layout data on the item
+                item.left = colIndex;
+            });
+
+            const maxColumns = columns.length;
+
+            // Finalize dimensions
+            cluster.forEach(item => {
+                item.width = 100 / maxColumns;
+                item.left = (100 / maxColumns) * item.left; // Convert colIndex to percentage
             });
         });
 
