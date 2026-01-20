@@ -143,7 +143,7 @@ export const SleepModal: React.FC<SleepModalProps> = ({ isOpen, onClose, onSave,
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm px-4 pb-4 sm:p-0">
             <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-2">
                         <h3 className="text-xl font-bold flex items-center gap-2 text-gray-700">
                             💤 ねんねを記録
@@ -157,17 +157,19 @@ export const SleepModal: React.FC<SleepModalProps> = ({ isOpen, onClose, onSave,
                             </button>
                         )}
                     </div>
+                </div>
 
+                <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
                     <button
                         onClick={() => setMode('timer')}
-                        className={cn("px-3 py-1 rounded-md text-sm transition-all", mode === 'timer' ? 'bg-white shadow font-bold' : 'text-gray-500')}
+                        className={cn("flex-1 py-2 rounded-lg text-sm font-bold transition-all", mode === 'timer' ? 'bg-white shadow-sm' : 'text-gray-400 hover:text-gray-600')}
                         style={mode === 'timer' ? { color: LogColors.sleep.text } : undefined}
                     >
                         タイマー
                     </button>
                     <button
                         onClick={() => setMode('manual')}
-                        className={cn("px-3 py-1 rounded-md text-sm transition-all", mode === 'manual' ? 'bg-white shadow font-bold' : 'text-gray-500')}
+                        className={cn("flex-1 py-2 rounded-lg text-sm font-bold transition-all", mode === 'manual' ? 'bg-white shadow-sm' : 'text-gray-400 hover:text-gray-600')}
                         style={mode === 'manual' ? { color: LogColors.sleep.text } : undefined}
                     >
                         手入力
