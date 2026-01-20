@@ -149,9 +149,14 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
 
             cluster.forEach(item => {
                 // Find first column where this item fits (startMins >= column's endMins)
+                // V3 Update: Tolerate overlap up to 25% of the item's height.
                 let colIndex = -1;
+
                 for (let i = 0; i < columns.length; i++) {
-                    if (columns[i] <= item.startMins) {
+                    const overlap = Math.max(0, columns[i] - item.startMins);
+                    const tolerance = (item.endMins - item.startMins) * 0.25;
+
+                    if (overlap <= tolerance) {
                         colIndex = i;
                         break;
                     }
@@ -162,8 +167,9 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                     colIndex = columns.length;
                     columns.push(item.endMins);
                 } else {
-                    // Update existing column
-                    columns[colIndex] = item.endMins;
+                    // Update existing column. Logic: new end is max of current end or item end.
+                    // Usually item.endMins > columns[i] since item starts later, but check max to be safe.
+                    columns[colIndex] = Math.max(columns[colIndex], item.endMins);
                 }
 
                 // Store temporary layout data on the item
