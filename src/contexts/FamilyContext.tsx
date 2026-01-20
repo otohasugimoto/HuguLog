@@ -18,8 +18,8 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     useEffect(() => {
         // Restore session from local storage
-        const storedFamilyId = localStorage.getItem('babylog_family_id');
-        const storedFamilyCode = localStorage.getItem('babylog_family_code');
+        const storedFamilyId = localStorage.getItem('hugulog_family_id');
+        const storedFamilyCode = localStorage.getItem('hugulog_family_code');
         if (storedFamilyId) {
             setFamilyId(storedFamilyId);
             setFamilyCode(storedFamilyCode);
@@ -73,8 +73,8 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 // Created new family
                 setFamilyId(newData.id);
                 setFamilyCode(newData.family_code);
-                localStorage.setItem('babylog_family_id', newData.id);
-                localStorage.setItem('babylog_family_code', newData.family_code);
+                localStorage.setItem('hugulog_family_id', newData.id);
+                localStorage.setItem('hugulog_family_code', newData.family_code);
                 setIsLoading(false);
                 return { success: true };
 
@@ -82,8 +82,8 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 // Found existing
                 setFamilyId(data.id);
                 setFamilyCode(data.family_code);
-                localStorage.setItem('babylog_family_id', data.id);
-                localStorage.setItem('babylog_family_code', data.family_code);
+                localStorage.setItem('hugulog_family_id', data.id);
+                localStorage.setItem('hugulog_family_code', data.family_code);
                 setIsLoading(false);
                 return { success: true };
             }
@@ -97,8 +97,8 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const logout = () => {
         setFamilyId(null);
         setFamilyCode(null);
-        localStorage.removeItem('babylog_family_id');
-        localStorage.removeItem('babylog_family_code');
+        localStorage.removeItem('hugulog_family_id');
+        localStorage.removeItem('hugulog_family_code');
     };
 
     return (

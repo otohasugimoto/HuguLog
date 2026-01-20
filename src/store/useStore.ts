@@ -15,7 +15,7 @@ export const useStore = (familyId: string | null) => {
     // Initial settings from local storage (settings are per device usually, or could be per family)
     // For now, keep settings local or sync them? User didn't specify. Let's keep local for simplicity/device preference.
     const [settings, setSettings] = useState<AppSettings>(() => {
-        const stored = localStorage.getItem('babylog_settings');
+        const stored = localStorage.getItem('hugulog_settings');
         return stored ? JSON.parse(stored) : { showGhost: true, ghostMode: 'yesterday' };
     });
 
@@ -47,7 +47,7 @@ export const useStore = (familyId: string | null) => {
                 setProfiles(mappedProfiles);
 
                 // Set current baby
-                const storedCurrent = localStorage.getItem('babylog_current_baby');
+                const storedCurrent = localStorage.getItem('hugulog_current_baby');
                 if (storedCurrent && mappedProfiles.some(p => p.id === storedCurrent)) {
                     setCurrentBabyId(storedCurrent);
                 } else if (mappedProfiles.length > 0) {
@@ -104,12 +104,12 @@ export const useStore = (familyId: string | null) => {
 
     // Persistence for local settings
     useEffect(() => {
-        localStorage.setItem('babylog_settings', JSON.stringify(settings));
+        localStorage.setItem('hugulog_settings', JSON.stringify(settings));
     }, [settings]);
 
     useEffect(() => {
         if (currentBabyId) {
-            localStorage.setItem('babylog_current_baby', currentBabyId);
+            localStorage.setItem('hugulog_current_baby', currentBabyId);
         }
     }, [currentBabyId]);
 

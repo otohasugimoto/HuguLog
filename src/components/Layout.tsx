@@ -38,7 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentBaby, onEditPro
                             <span className="font-bold text-[var(--theme-text)]">{currentBaby.name}</span>
                         </div>
                     ) : (
-                        <span className="font-bold text-xl text-baby-text">BabyLog</span>
+                        <span className="font-bold text-xl text-baby-text">HuguLog</span>
                     )}
 
                     {/* Add Profile Button */}
