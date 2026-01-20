@@ -75,7 +75,7 @@ export const Stats: React.FC<StatsProps> = ({ logs, babyId, date }) => {
             {/* Sleep Card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h3 className="font-bold mb-4 flex justify-between" style={{ color: LogColors.sleep.text }}>
-                    <span>💤 睡眠時間</span>
+                    <span>💤 ねんね時間</span>
                     <span className="text-xl">{totalSleepHours}時間 {totalSleepMins}分</span>
                 </h3>
                 <div className="h-48 w-full relative">
@@ -106,14 +106,14 @@ export const Stats: React.FC<StatsProps> = ({ logs, babyId, date }) => {
             {/* Feed Card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h3 className="font-bold mb-2 flex justify-between" style={{ color: LogColors.milk.text }}>
-                    <span>🍼 授乳</span>
+                    <span>🍼 ミルク</span>
                     <span className="text-xl">{feedStats.totalAmount}ml <span className="text-sm">/ {feedStats.count}回</span></span>
                 </h3>
             </div>
 
             {/* Diaper Card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-bold mb-2" style={{ color: '#F59E0B' }}>🚽 オムツ</h3>
+                <h3 className="font-bold mb-2" style={{ color: '#F59E0B' }}>🚽 おむつ</h3>
                 <div className="flex justify-around text-center">
                     <div>
                         <div className="text-3xl font-bold" style={{ color: LogColors.pee.text }}>{diaperStats.pee}</div>

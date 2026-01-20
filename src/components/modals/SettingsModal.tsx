@@ -39,10 +39,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
             let detail = '';
 
             if (log.type === 'feed') {
-                typeLabel = '授乳';
+                typeLabel = 'ミルク';
                 detail = `${log.amount} ml`;
             } else if (log.type === 'sleep') {
-                typeLabel = '睡眠';
+                typeLabel = 'ねんね';
                 if (log.endTime) {
                     const diff = Math.floor((new Date(log.endTime).getTime() - new Date(log.startTime).getTime()) / 60000);
                     detail = `${diff} 分`;
@@ -50,7 +50,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
                     detail = '計測中';
                 }
             } else if (log.type === 'diaper') {
-                typeLabel = 'オムツ';
+                typeLabel = 'おむつ';
                 const noteData = log.note ? JSON.parse(log.note) : {};
                 if (noteData.type === 'pee') detail = '小便';
                 else if (noteData.type === 'poop') detail = '大便';

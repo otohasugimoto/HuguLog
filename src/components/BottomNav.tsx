@@ -24,7 +24,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onPressFeed, onPressSleep,
             colors: LogColors.pee // Defaulting to pee (cyan) for generic diaper button
         },
         {
-            label: '睡眠',
+            label: 'ねんね',
             icon: Moon,
             action: onPressSleep,
             colors: LogColors.sleep

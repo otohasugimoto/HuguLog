@@ -64,7 +64,7 @@ export const DiaperModal: React.FC<DiaperModalProps> = ({ isOpen, onClose, onSav
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
             <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in fade-in zoom-in duration-200">
-                <h2 className="text-xl font-bold mb-6 text-gray-700">オムツ記録</h2>
+                <h2 className="text-xl font-bold mb-6 text-gray-700">おむつ記録</h2>
 
                 <div className="space-y-6">
                     {/* Size Selector */}

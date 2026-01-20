@@ -133,7 +133,7 @@ export const SleepModal: React.FC<SleepModalProps> = ({ isOpen, onClose, onSave,
             <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-gray-700">
-                        💤 睡眠を記録
+                        💤 ねんねを記録
                     </h3>
 
                     <button

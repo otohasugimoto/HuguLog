@@ -63,7 +63,7 @@ export const FeedModal: React.FC<FeedModalProps> = ({ isOpen, onClose, onSave, b
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm px-4 pb-4 sm:p-0">
             <div className="bg-white w-full max-w-sm rounded-2xl p-6 animate-in slide-in-from-bottom-10 fade-in duration-200">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: LogColors.milk.text }}>
-                    🍼 授乳を記録
+                    🍼 ミルクを記録
                 </h3>
 
                 <form onSubmit={handleSubmit} className="space-y-6">

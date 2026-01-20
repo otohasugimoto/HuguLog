@@ -341,7 +341,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                         <div className="log-capsule w-full h-full rounded-2xl shadow-sm flex items-center justify-center p-1 transition-colors" style={getLogStyle()}>
                                                             <div className="flex items-center gap-2">
                                                                 <Moon size={16} />
-                                                                <span className="font-bold text-xs">寝んね</span>
+                                                                <span className="font-bold text-xs">ねんね</span>
                                                             </div>
                                                             <button onClick={handleDelete} className="absolute top-1 right-1 p-1 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
                                                                 <Trash2 size={12} />

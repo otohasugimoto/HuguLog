@@ -26,9 +26,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ onPressFeed, onPressSlee
     const toggleMenu = () => setIsOpen(!isOpen);
 
     const actions = [
-        { label: 'オムツ', icon: <DiaperIcon size={24} />, onClick: onPressDiaper, color: 'bg-cyan-50 text-cyan-600 border border-cyan-100' },
-        { label: '睡眠', icon: <Moon size={24} />, onClick: onPressSleep, color: 'bg-indigo-50 text-indigo-600 border border-indigo-100' },
-        { label: '授乳', icon: <Milk size={24} />, onClick: onPressFeed, color: 'bg-blue-50 text-blue-600 border border-blue-100' },
+        { label: 'おむつ', icon: <DiaperIcon size={24} />, onClick: onPressDiaper, color: 'bg-cyan-50 text-cyan-600 border border-cyan-100' },
+        { label: 'ねんね', icon: <Moon size={24} />, onClick: onPressSleep, color: 'bg-indigo-50 text-indigo-600 border border-indigo-100' },
+        { label: 'ミルク', icon: <Milk size={24} />, onClick: onPressFeed, color: 'bg-blue-50 text-blue-600 border border-blue-100' },
     ];
 
     return (
