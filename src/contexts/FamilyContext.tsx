@@ -38,7 +38,13 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 .eq('family_code', code)
                 .single();
 
-            if (error || !data) {
+            if (error && error.code !== 'PGRST116') { // PGRST116 is "Row not found" for single()
+                console.error('Login: Error fetching family', error);
+                setIsLoading(false);
+                return { success: false, error: '通信エラーが発生しました。' };
+            }
+
+            if (!data) {
                 // If not found, create new family? 
                 // Specification didn't explicitly say "Create if not exists", but implied "Shared".
                 // If I enter a code that doesn't exist, should I create it?
@@ -59,10 +65,9 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     .single();
 
                 if (createError) {
-                    // Maybe it existed but we failed to find it? Or duplicate key if timing race?
-                    // Or just generic error
+                    console.error('Login: Failed to create family', createError);
                     setIsLoading(false);
-                    return { success: false, error: 'ログインに失敗しました。' };
+                    return { success: false, error: '新しい家族IDの作成に失敗しました。' };
                 }
 
                 // Created new family
