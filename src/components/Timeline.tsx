@@ -197,7 +197,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                 <span className={cn("text-xs font-bold leading-none", isToday && themeClasses.todayText)}>{format(date, 'd')}</span>
                             </div>
                             {dailyMilkTotal > 0 && (
-                                <span className="text-[9px] text-gray-400 font-medium mt-0.5">
+                                <span className="text-[11px] text-gray-400 font-medium mt-0.5">
                                     {dailyMilkTotal}ml
                                 </span>
                             )}
@@ -280,7 +280,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                     }}
                                                 >
                                                     <Milk size={16} />
-                                                    <span className="font-bold text-xs">{ghost.amount}ml</span>
+                                                    <span className="font-bold text-sm">{ghost.amount}ml</span>
                                                     <span className="text-[10px] bg-white/20 px-1 rounded ml-1">目安</span>
                                                 </div>
                                             </div>
@@ -341,7 +341,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                         <div className="log-capsule w-full h-full rounded-2xl shadow-sm flex items-center justify-center p-1 transition-colors" style={getLogStyle()}>
                                                             <div className="flex items-center gap-2">
                                                                 <Moon size={16} />
-                                                                <span className="font-bold text-xs">ねんね</span>
+                                                                <span className="font-bold text-sm">ねんね</span>
                                                             </div>
                                                             <button onClick={handleDelete} className="absolute top-1 right-1 p-1 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
                                                                 <Trash2 size={12} />
@@ -351,7 +351,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                         <div className="flex items-start">
                                                             <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-11 rounded-full shadow-sm transition-colors" style={getLogStyle()}>
                                                                 <Milk size={16} />
-                                                                <span className="font-bold text-xs">{log.amount}ml</span>
+                                                                <span className="font-bold text-sm">{log.amount}ml</span>
                                                             </div>
                                                             <button onClick={handleDelete} className="ml-1 mt-3 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
                                                                 <Trash2 size={12} />
@@ -363,7 +363,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                             <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-11 rounded-full shadow-sm transition-colors" style={getLogStyle()}>
                                                                 <Droplet size={16} className={noteData.type === 'poop' ? "hidden" : "fill-current"} />
                                                                 {(noteData.type === 'poop' || noteData.type === 'both') && <PoopIcon size={16} />}
-                                                                <span className="font-bold text-xs">
+                                                                <span className="font-bold text-sm">
                                                                     {(noteData.type === 'pee') ? 'おしっこ' :
                                                                         (noteData.type === 'poop') ? 'うんち' : '両方'}
                                                                 </span>
