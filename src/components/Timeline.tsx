@@ -74,47 +74,49 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
         const dayStart = startOfDay(columnDate);
         const dayEnd = endOfDay(columnDate);
 
-        const layoutItems = items.map(log => {
+        // 1. Process all items to calculate start/end mins
+        const processedItems = items.map(log => {
             const logStart = parseISO(log.startTime);
             let logEnd = log.endTime ? parseISO(log.endTime) : new Date();
 
-            // Calculate start minutes relative to day start
-            // If starts before today, it's 0. If after, it's relative mins.
             let startMins = 0;
             if (isAfter(logStart, dayStart)) {
                 startMins = differenceInMinutes(logStart, dayStart);
             }
 
-            // Calculate end minutes
-            let endMins = 1440; // Default to end of day
-
-            // If log ends on this day (or before end of day), calculate specific end time
+            let endMins = 1440;
             if (isBefore(logEnd, dayEnd)) {
                 endMins = differenceInMinutes(logEnd, dayStart);
             }
-            // If active (no endTime) and we are looking at a past day, it fills the whole day (conceptually until "now" which is in future) -> 1440
-            // If active and we are looking at today, it goes until "now" -> calculated above.
-            // If active/future end and we are looking at today, we clamp at 1440 anyway?
-            // Wait, differenceInMinutes(future, dayStart) > 1440.
 
-            // Clamp values
             startMins = Math.max(0, startMins);
-            endMins = Math.min(1440, Math.max(startMins + 15, endMins)); // Ensure at least 15m duration visually if very short, and clamp to 1440
+            endMins = Math.min(1440, Math.max(startMins + 15, endMins));
 
             return {
                 ...log,
                 startMins,
                 endMins,
                 width: 100,
-                left: 0
+                left: 0,
+                zIndex: log.type === 'sleep' ? 1 : 10 // Default internal z preference
             };
         });
 
-        // Detect overlaps
-        const clusters: typeof layoutItems[] = [];
-        let currentCluster: typeof layoutItems = [];
+        // 2. Separate Sleep vs Others
+        const sleepItems = processedItems.filter(i => i.type === 'sleep');
+        const otherItems = processedItems.filter(i => i.type !== 'sleep');
 
-        layoutItems.sort((a, b) => a.startMins - b.startMins).forEach(item => {
+        // 3. Configure Sleep Items (Background)
+        sleepItems.forEach(item => {
+            item.width = 100;
+            item.left = 0;
+        });
+
+        // 4. Cluster Other Items (Foreground)
+        const clusters: typeof otherItems[] = [];
+        let currentCluster: typeof otherItems = [];
+
+        otherItems.sort((a, b) => a.startMins - b.startMins).forEach(item => {
             if (currentCluster.length === 0) {
                 currentCluster.push(item);
             } else {
@@ -137,7 +139,8 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
             });
         });
 
-        return layoutItems;
+        // 5. Combine and Return
+        return [...sleepItems, ...otherItems];
     };
 
     // Ghost Calculation
@@ -357,7 +360,8 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                 onClick={(e) => { e.stopPropagation(); onLogClick(log); }}
                                                 className={cn(
                                                     "absolute transition-all duration-300 group cursor-pointer",
-                                                    isSelected ? "z-20 scale-100" : "z-10 scale-100 origin-center hover:brightness-95"
+                                                    /* Dynamic Z-Index handled via style, simplified class here */
+                                                    isSelected ? "scale-100" : "scale-100 origin-center hover:brightness-95"
                                                 )}
                                                 style={{
                                                     top: `${top}%`,
@@ -365,7 +369,8 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                     left: isSelected ? `calc(3rem + ${log.left}%)` : '50%',
                                                     width: isSelected ? `calc((100% - 3.5rem) * ${log.width / 100})` : 'auto',
                                                     transform: isSelected ? 'none' : 'translateX(-50%)',
-                                                    minHeight: (isSelected && log.type === 'sleep') ? '20px' : '0'
+                                                    minHeight: (isSelected && log.type === 'sleep') ? '20px' : '0',
+                                                    zIndex: isSelected ? (log.type === 'sleep' ? 5 : 20) : (log.type === 'sleep' ? 0 : 10)
                                                 }}
                                             >
                                                 {/* Render Content based on Mode */}
