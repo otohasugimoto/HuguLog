@@ -74,8 +74,8 @@ export const DiaperModal: React.FC<DiaperModalProps> = ({ isOpen, onClose, onSav
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm px-4 pb-4 sm:p-0">
+            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in slide-in-from-bottom-10 fade-in duration-200">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-700">おむつ記録</h2>
                     {initialData && onDelete && (

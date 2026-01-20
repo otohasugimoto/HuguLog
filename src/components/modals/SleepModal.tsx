@@ -173,88 +173,88 @@ export const SleepModal: React.FC<SleepModalProps> = ({ isOpen, onClose, onSave,
                         手入力
                     </button>
                 </div>
-            </div>
 
-            {mode === 'timer' ? (
-                <div className="text-center py-4">
-                    {activeSleepLog ? (
-                        <div className="space-y-6">
-                            <div className="text-5xl font-mono font-medium" style={{ color: LogColors.sleep.text }}>
-                                {formatDuration(elapsed)}
+                {mode === 'timer' ? (
+                    <div className="text-center py-4">
+                        {activeSleepLog ? (
+                            <div className="space-y-6">
+                                <div className="text-5xl font-mono font-medium" style={{ color: LogColors.sleep.text }}>
+                                    {formatDuration(elapsed)}
+                                </div>
+                                <p className="text-sm" style={{ color: LogColors.sleep.text }}>でおねんね中...</p>
+                                <button
+                                    onClick={handleStopSleep}
+                                    className="w-full py-4 bg-red-100 text-red-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-200 transition-colors"
+                                >
+                                    <Square size={20} fill="currentColor" />
+                                    起きた
+                                </button>
                             </div>
-                            <p className="text-sm" style={{ color: LogColors.sleep.text }}>でおねんね中...</p>
-                            <button
-                                onClick={handleStopSleep}
-                                className="w-full py-4 bg-red-100 text-red-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-200 transition-colors"
-                            >
-                                <Square size={20} fill="currentColor" />
-                                起きた
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            <div className="text-5xl font-mono font-medium text-gray-300">
-                                00:00:00
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="text-5xl font-mono font-medium text-gray-300">
+                                    00:00:00
+                                </div>
+                                <button
+                                    onClick={handleStartSleep}
+                                    className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-95 transition-colors"
+                                    style={{ backgroundColor: LogColors.sleep.bg, color: LogColors.sleep.text }}
+                                >
+                                    <Play size={20} fill="currentColor" />
+                                    おやすみ
+                                </button>
                             </div>
-                            <button
-                                onClick={handleStartSleep}
-                                className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-95 transition-colors"
-                                style={{ backgroundColor: LogColors.sleep.bg, color: LogColors.sleep.text }}
-                            >
-                                <Play size={20} fill="currentColor" />
-                                おやすみ
-                            </button>
-                        </div>
-                    )}
-                </div>
-            ) : (
-                <form onSubmit={handleManualSave} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-bold text-gray-500 mb-2">日付</label>
-                        <input
-                            type="date"
-                            required
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="w-full text-center font-bold p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white"
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-500 mb-2">寝た時間</label>
-                            <input
-                                type="time"
-                                required
-                                value={startTimeStr}
-                                onChange={(e) => setStartTimeStr(e.target.value)}
-                                className="w-full p-3 bg-gray-50 rounded-xl text-lg font-mono border-none focus:ring-2 focus:ring-indigo-300"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-500 mb-2">起きた時間</label>
-                            <input
-                                type="time"
-                                value={endTimeStr}
-                                onChange={(e) => setEndTimeStr(e.target.value)}
-                                className="w-full p-3 bg-gray-50 rounded-xl text-lg font-mono border-none focus:ring-2 focus:ring-indigo-300"
-                            />
-                        </div>
-                    </div>
-                    <button
-                        type="submit"
-                        className={cn(
-                            "w-full py-3 mt-4 font-bold text-white rounded-xl shadow-md active:scale-95 transition-transform bg-gradient-to-r",
-                            themeClasses.saveBtn
                         )}
-                    >
-                        保存
-                    </button>
-                </form>
-            )}
+                    </div>
+                ) : (
+                    <form onSubmit={handleManualSave} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-500 mb-2">日付</label>
+                            <input
+                                type="date"
+                                required
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                className="w-full text-center font-bold p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500 mb-2">寝た時間</label>
+                                <input
+                                    type="time"
+                                    required
+                                    value={startTimeStr}
+                                    onChange={(e) => setStartTimeStr(e.target.value)}
+                                    className="w-full p-3 bg-gray-50 rounded-xl text-lg font-mono border-none focus:ring-2 focus:ring-indigo-300"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500 mb-2">起きた時間</label>
+                                <input
+                                    type="time"
+                                    value={endTimeStr}
+                                    onChange={(e) => setEndTimeStr(e.target.value)}
+                                    className="w-full p-3 bg-gray-50 rounded-xl text-lg font-mono border-none focus:ring-2 focus:ring-indigo-300"
+                                />
+                            </div>
+                        </div>
+                        <button
+                            type="submit"
+                            className={cn(
+                                "w-full py-3 mt-4 font-bold text-white rounded-xl shadow-md active:scale-95 transition-transform bg-gradient-to-r",
+                                themeClasses.saveBtn
+                            )}
+                        >
+                            保存
+                        </button>
+                    </form>
+                )}
 
-            <button onClick={onClose} className="w-full text-center text-gray-400 mt-6 text-sm hover:bg-gray-50 py-2 rounded-lg">
-                閉じる
-            </button>
+                <button onClick={onClose} className="w-full text-center text-gray-400 mt-6 text-sm hover:bg-gray-50 py-2 rounded-lg">
+                    閉じる
+                </button>
+            </div>
         </div>
     );
 };
