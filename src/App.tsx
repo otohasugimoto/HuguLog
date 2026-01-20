@@ -130,7 +130,6 @@ function App() {
             <Timeline
               logs={logs}
               babyId={currentBabyId}
-              onDeleteLog={deleteLog}
               showGhost={settings.showGhost}
               ghostMode={settings.ghostMode}
               onLogClick={handleEditLog}
@@ -183,6 +182,7 @@ function App() {
         isOpen={isFeedOpen}
         onClose={handleCloseModal}
         onSave={handleSaveLog}
+        onDelete={deleteLog}
         babyId={currentBabyId || ''}
         initialData={editingLog || undefined}
         themeColor={currentBaby?.themeColor}
@@ -192,6 +192,7 @@ function App() {
         isOpen={isSleepOpen}
         onClose={handleCloseModal}
         onSave={handleSaveLog}
+        onDelete={deleteLog}
         babyId={currentBabyId || ''}
         activeSleepLog={activeSleepLog}
         initialData={editingLog || undefined}
@@ -202,6 +203,7 @@ function App() {
         isOpen={isDiaperOpen}
         onClose={handleCloseModal}
         onSave={handleSaveLog}
+        onDelete={deleteLog}
         babyId={currentBabyId || ''}
         initialData={editingLog || undefined}
         themeColor={currentBaby?.themeColor}

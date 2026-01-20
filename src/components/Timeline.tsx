@@ -4,7 +4,7 @@ import { format, startOfWeek, addDays, isSameDay, subWeeks, addWeeks, parseISO, 
 import { ja } from 'date-fns/locale';
 import type { LogEntry } from '../types';
 import { cn } from '../lib/utils';
-import { ChevronLeft, ChevronRight, Moon, Milk, Trash2, Droplet } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Moon, Milk, Droplet } from 'lucide-react';
 import { PoopIcon } from './PoopIcon';
 import { getThemeClasses, getThemeColor } from '../lib/theme';
 import { LogColors } from '../lib/colors';
@@ -12,7 +12,6 @@ import { LogColors } from '../lib/colors';
 interface TimelineProps {
     logs: LogEntry[];
     babyId: string;
-    onDeleteLog: (id: string) => void;
     showGhost: boolean;
     ghostMode?: 'yesterday' | 'average';
     onLogClick: (log: LogEntry) => void;
@@ -25,7 +24,7 @@ interface GhostLog {
     amount: number;
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, showGhost, ghostMode = 'average', onLogClick, themeColor = 'orange' }) => {
+export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, ghostMode = 'average', onLogClick, themeColor = 'orange' }) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -377,11 +376,6 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                             ? Math.max(log.endMins - log.startMins, 20) / 14.4
                                             : 0;
 
-                                        const handleDelete = (e: React.MouseEvent) => {
-                                            e.stopPropagation();
-                                            if (window.confirm('このログを削除しますか？')) onDeleteLog(log.id);
-                                        };
-
                                         const noteData = log.type === 'diaper' ? (JSON.parse(log.note || '{}')) : {};
 
                                         // Helper to get CSS vars
@@ -423,36 +417,27 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                 {isSelected ? (
                                                     // WIDE VIEW RENDERING with Capsule Buttons
                                                     log.type === 'sleep' ? (
-                                                        <div className="log-capsule w-full h-full rounded-[10px] shadow-sm flex items-center justify-center p-1 transition-colors" style={getLogStyle()}>
+                                                        <div className="log-capsule w-full h-full rounded-[10px] shadow-sm flex items-center justify-center p-1 transition-colors border-2 border-white" style={getLogStyle()}>
                                                             <div className="flex items-center gap-2">
                                                                 <Moon size={16} />
                                                                 <span className="font-bold text-sm">ねんね</span>
                                                             </div>
-                                                            <button onClick={handleDelete} className="absolute top-1 right-1 p-1 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
-                                                                <Trash2 size={12} />
-                                                            </button>
                                                         </div>
                                                     ) : log.type === 'feed' ? (
                                                         <div className="flex items-start">
-                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors" style={getLogStyle()}>
+                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors border-2 border-white" style={getLogStyle()}>
                                                                 <Milk size={16} />
                                                                 <span className="font-bold text-sm">{log.amount}ml</span>
                                                             </div>
-                                                            <button onClick={handleDelete} className="ml-1 mt-1.5 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
-                                                                <Trash2 size={12} />
-                                                            </button>
                                                         </div>
                                                     ) : (
                                                         // Diaper
                                                         <div className="flex items-start">
-                                                            <div className="log-capsule flex items-center justify-center w-8 h-8 rounded-full shadow-sm transition-colors" style={getLogStyle()}>
-                                                                <Droplet size={16} className={noteData.type === 'poop' ? "hidden" : "fill-current"} />
+                                                            <div className="log-capsule flex items-center justify-center w-8 h-8 rounded-full shadow-sm transition-colors border-2 border-white" style={getLogStyle()}>
+                                                                <Droplet size={16} className={noteData.type === 'poop' ? "hidden" : ""} />
                                                                 {(noteData.type === 'poop' || noteData.type === 'both') && <PoopIcon size={16} />}
                                                             </div>
                                                             {/* Diaper doesn't show text now, just icon in circle */}
-                                                            <button onClick={handleDelete} className="ml-1 mt-1.5 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
-                                                                <Trash2 size={12} />
-                                                            </button>
                                                         </div>
                                                     )
                                                 ) : (

@@ -11,12 +11,15 @@ interface DiaperModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (log: LogEntry) => void;
+    onDelete?: (logId: string) => void;
     babyId: string;
     initialData?: LogEntry | null;
     themeColor?: string;
 }
 
-export const DiaperModal: React.FC<DiaperModalProps> = ({ isOpen, onClose, onSave, babyId, initialData, themeColor = 'orange' }) => {
+import { Trash2 } from 'lucide-react';
+
+export const DiaperModal: React.FC<DiaperModalProps> = ({ isOpen, onClose, onSave, onDelete, babyId, initialData, themeColor = 'orange' }) => {
     const [selectedType, setSelectedType] = useState<DiaperType>('pee');
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
@@ -44,6 +47,15 @@ export const DiaperModal: React.FC<DiaperModalProps> = ({ isOpen, onClose, onSav
         }
     }, [isOpen, initialData]);
 
+    const handleDelete = () => {
+        if (initialData && onDelete) {
+            if (window.confirm('このログを削除しますか？')) {
+                onDelete(initialData.id);
+                onClose();
+            }
+        }
+    };
+
     const handleSave = () => {
         const dateTime = new Date(`${date}T${startTime}`);
 
@@ -64,7 +76,17 @@ export const DiaperModal: React.FC<DiaperModalProps> = ({ isOpen, onClose, onSav
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
             <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in fade-in zoom-in duration-200">
-                <h2 className="text-xl font-bold mb-6 text-gray-700">おむつ記録</h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-gray-700">おむつ記録</h2>
+                    {initialData && onDelete && (
+                        <button
+                            onClick={handleDelete}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    )}
+                </div>
 
                 <div className="space-y-6">
                     {/* Size Selector */}

@@ -9,12 +9,15 @@ interface FeedModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (log: LogEntry) => void;
+    onDelete?: (logId: string) => void;
     babyId: string;
     initialData?: LogEntry | null;
     themeColor?: string;
 }
 
-export const FeedModal: React.FC<FeedModalProps> = ({ isOpen, onClose, onSave, babyId, initialData, themeColor = 'orange' }) => {
+import { Trash2 } from 'lucide-react';
+
+export const FeedModal: React.FC<FeedModalProps> = ({ isOpen, onClose, onSave, onDelete, babyId, initialData, themeColor = 'orange' }) => {
     const [amount, setAmount] = useState(120);
     const [date, setDate] = useState<string>('');
     const [time, setTime] = useState<string>('');
@@ -42,6 +45,15 @@ export const FeedModal: React.FC<FeedModalProps> = ({ isOpen, onClose, onSave, b
 
     if (!isOpen) return null;
 
+    const handleDelete = () => {
+        if (initialData && onDelete) {
+            if (window.confirm('このログを削除しますか？')) {
+                onDelete(initialData.id);
+                onClose();
+            }
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const dateTime = new Date(`${date}T${time}`);
@@ -62,9 +74,19 @@ export const FeedModal: React.FC<FeedModalProps> = ({ isOpen, onClose, onSave, b
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 backdrop-blur-sm px-4 pb-4 sm:p-0">
             <div className="bg-white w-full max-w-sm rounded-2xl p-6 animate-in slide-in-from-bottom-10 fade-in duration-200">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: LogColors.milk.text }}>
-                    🍼 ミルクを記録
-                </h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: LogColors.milk.text }}>
+                        🍼 ミルクを記録
+                    </h3>
+                    {initialData && onDelete && (
+                        <button
+                            onClick={handleDelete}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    )}
+                </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-2 gap-3">
