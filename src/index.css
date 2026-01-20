@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-baby-text antialiased;
+  }
+}
+
+@layer components {
+  .log-capsule {
+    background-color: var(--log-bg);
+    color: var(--log-text);
+  }
+
+  .log-capsule:active {
+    background-color: var(--log-active-bg);
+  }
+}
