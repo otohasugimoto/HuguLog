@@ -414,7 +414,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                     height: (isSelected && log.type === 'sleep') ? `${height}%` : 'auto',
                                                     left: isSelected ? `calc(3rem + ${log.left}%)` : '50%',
                                                     width: isSelected ? `calc((100% - 3.5rem) * ${log.width / 100})` : 'auto',
-                                                    transform: isSelected ? 'none' : 'translateX(-50%)',
+                                                    transform: isSelected ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)') : 'translateX(-50%)',
                                                     minHeight: (isSelected && log.type === 'sleep') ? '20px' : '0',
                                                     zIndex: isSelected ? (log.type === 'sleep' ? 5 : 20) : (log.type === 'sleep' ? 0 : 10)
                                                 }}
@@ -423,7 +423,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                 {isSelected ? (
                                                     // WIDE VIEW RENDERING with Capsule Buttons
                                                     log.type === 'sleep' ? (
-                                                        <div className="log-capsule w-full h-full rounded-2xl shadow-sm flex items-center justify-center p-1 transition-colors" style={getLogStyle()}>
+                                                        <div className="log-capsule w-full h-full rounded-[10px] shadow-sm flex items-center justify-center p-1 transition-colors" style={getLogStyle()}>
                                                             <div className="flex items-center gap-2">
                                                                 <Moon size={16} />
                                                                 <span className="font-bold text-sm">ねんね</span>
@@ -434,18 +434,18 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                         </div>
                                                     ) : log.type === 'feed' ? (
                                                         <div className="flex items-start">
-                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-11 rounded-full shadow-sm transition-colors" style={getLogStyle()}>
+                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors" style={getLogStyle()}>
                                                                 <Milk size={16} />
                                                                 <span className="font-bold text-sm">{log.amount}ml</span>
                                                             </div>
-                                                            <button onClick={handleDelete} className="ml-1 mt-3 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
+                                                            <button onClick={handleDelete} className="ml-1 mt-1.5 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
                                                                 <Trash2 size={12} />
                                                             </button>
                                                         </div>
                                                     ) : (
                                                         // Diaper
                                                         <div className="flex items-start">
-                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-11 rounded-full shadow-sm transition-colors" style={getLogStyle()}>
+                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors" style={getLogStyle()}>
                                                                 <Droplet size={16} className={noteData.type === 'poop' ? "hidden" : "fill-current"} />
                                                                 {(noteData.type === 'poop' || noteData.type === 'both') && <PoopIcon size={16} />}
                                                                 <span className="font-bold text-sm">
@@ -453,7 +453,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                                         (noteData.type === 'poop') ? 'うんち' : '両方'}
                                                                 </span>
                                                             </div>
-                                                            <button onClick={handleDelete} className="ml-1 mt-3 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
+                                                            <button onClick={handleDelete} className="ml-1 mt-1.5 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
                                                                 <Trash2 size={12} />
                                                             </button>
                                                         </div>
