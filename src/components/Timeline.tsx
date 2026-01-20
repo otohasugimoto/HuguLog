@@ -51,7 +51,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
             if (scrollContainerRef.current && !hasScrolledRef.current) {
                 const now = new Date();
                 const currentMinutes = getHours(now) * 60 + getMinutes(now);
-                const totalHeight = 1536; // 24 * 64px
+                const totalHeight = 960; // 24 * 40px
                 const containerHeight = scrollContainerRef.current.clientHeight;
 
                 // Retry if height is 0
@@ -281,8 +281,8 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                 ref={scrollContainerRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden relative w-full pb-28"
             >
-                <div className="flex w-full relative min-h-[1536px]">
-                    {/* Note: min-h-[1536px] ensures scroll is possible, columns stretch to fit */}
+                <div className="flex w-full relative min-h-[960px]">
+                    {/* Note: min-h-[960px] ensures scroll is possible, columns stretch to fit */}
 
                     {weekDays.map(date => {
                         const isSelected = isSameDay(date, selectedDate);
@@ -313,7 +313,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                             <div
                                 key={date.toISOString()}
                                 className={cn(
-                                    "flex flex-col h-[1536px] transition-all duration-300 ease-in-out relative border-r border-transparent", // border-transparent to maintain layout structure
+                                    "flex flex-col h-[960px] transition-all duration-300 ease-in-out relative border-r border-transparent", // border-transparent to maintain layout structure
                                     isSelected ? "flex-[4] bg-white/20" : "flex-1 bg-white/50 hover:bg-gray-50/50 cursor-pointer"
                                 )}
                                 onClick={() => !isSelected && setSelectedDate(date)}
@@ -445,14 +445,11 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                                                     ) : (
                                                         // Diaper
                                                         <div className="flex items-start">
-                                                            <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors" style={getLogStyle()}>
+                                                            <div className="log-capsule flex items-center justify-center w-8 h-8 rounded-full shadow-sm transition-colors" style={getLogStyle()}>
                                                                 <Droplet size={16} className={noteData.type === 'poop' ? "hidden" : "fill-current"} />
                                                                 {(noteData.type === 'poop' || noteData.type === 'both') && <PoopIcon size={16} />}
-                                                                <span className="font-bold text-sm">
-                                                                    {(noteData.type === 'pee') ? 'おしっこ' :
-                                                                        (noteData.type === 'poop') ? 'うんち' : '両方'}
-                                                                </span>
                                                             </div>
+                                                            {/* Diaper doesn't show text now, just icon in circle */}
                                                             <button onClick={handleDelete} className="ml-1 mt-1.5 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
                                                                 <Trash2 size={12} />
                                                             </button>
