@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { format, startOfWeek, addDays, isSameDay, subWeeks, addWeeks, parseISO, getHours, getMinutes } from 'date-fns';
+import { format, startOfWeek, addDays, isSameDay, subWeeks, addWeeks, parseISO, getHours, getMinutes, differenceInMinutes, startOfDay, endOfDay, isAfter, isBefore } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import type { LogEntry } from '../types';
 import { cn } from '../lib/utils';
@@ -70,16 +70,37 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
     }, []); // Run once on mount
 
     // Helper: Layout Calculation
-    const calculateLayout = (items: LogEntry[]) => {
+    const calculateLayout = (items: LogEntry[], columnDate: Date) => {
+        const dayStart = startOfDay(columnDate);
+        const dayEnd = endOfDay(columnDate);
+
         const layoutItems = items.map(log => {
-            const start = parseISO(log.startTime);
-            const startMins = getHours(start) * 60 + start.getMinutes();
-            let endMins = startMins + 15;
-            if (log.type === 'sleep') {
-                const end = log.endTime ? parseISO(log.endTime) : new Date();
-                endMins = getHours(end) * 60 + end.getMinutes();
-                if (endMins < startMins) endMins += 24 * 60;
+            const logStart = parseISO(log.startTime);
+            let logEnd = log.endTime ? parseISO(log.endTime) : new Date();
+
+            // Calculate start minutes relative to day start
+            // If starts before today, it's 0. If after, it's relative mins.
+            let startMins = 0;
+            if (isAfter(logStart, dayStart)) {
+                startMins = differenceInMinutes(logStart, dayStart);
             }
+
+            // Calculate end minutes
+            let endMins = 1440; // Default to end of day
+
+            // If log ends on this day (or before end of day), calculate specific end time
+            if (isBefore(logEnd, dayEnd)) {
+                endMins = differenceInMinutes(logEnd, dayStart);
+            }
+            // If active (no endTime) and we are looking at a past day, it fills the whole day (conceptually until "now" which is in future) -> 1440
+            // If active and we are looking at today, it goes until "now" -> calculated above.
+            // If active/future end and we are looking at today, we clamp at 1440 anyway?
+            // Wait, differenceInMinutes(future, dayStart) > 1440.
+
+            // Clamp values
+            startMins = Math.max(0, startMins);
+            endMins = Math.min(1440, Math.max(startMins + 15, endMins)); // Ensure at least 15m duration visually if very short, and clamp to 1440
+
             return {
                 ...log,
                 startMins,
@@ -219,9 +240,22 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, onDeleteLog, s
                         const isToday = isSameDay(date, new Date());
 
                         // Filter & Layout Logs
-                        const dayRawLogs = logs.filter(l => l.babyId === babyId && isSameDay(parseISO(l.startTime), date))
-                            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-                        const layoutLogs = calculateLayout(dayRawLogs);
+                        // Include logs that overlap with this day
+                        const dayStart = startOfDay(date);
+                        const dayEnd = endOfDay(date);
+
+                        const dayRawLogs = logs.filter(l => {
+                            if (l.babyId !== babyId) return false;
+
+                            const s = parseISO(l.startTime);
+                            const e = l.endTime ? parseISO(l.endTime) : new Date();
+
+                            // Check overlap: Start < DayEnd AND End > DayStart
+                            // Note: We use < and > for overlap.
+                            return s < dayEnd && e > dayStart;
+                        }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+                        const layoutLogs = calculateLayout(dayRawLogs, date);
 
                         // Ghosts (Only for selected)
                         const ghosts = isSelected ? getGhostsForDay(date) : [];
