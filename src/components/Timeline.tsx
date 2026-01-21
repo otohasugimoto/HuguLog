@@ -67,6 +67,37 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
         return () => clearTimeout(timer);
     }, []); // Run once on mount
 
+    // Helper: Narrow View Layout (Dot shifting)
+    const calculateNarrowOffsets = (items: LogEntry[]) => {
+        // Only shift non-sleep items (dots)
+        const dots = items.filter(i => i.type !== 'sleep').sort((a, b) => {
+            const aStart = parseISO(a.startTime);
+            const bStart = parseISO(b.startTime);
+            return aStart.getTime() - bStart.getTime();
+        });
+
+        const offsets = new Map<string, number>();
+        const placed: { min: number, lane: number }[] = [];
+
+        dots.forEach(item => {
+            const d = parseISO(item.startTime);
+            const mins = getHours(d) * 60 + getMinutes(d);
+
+            let lane = 0;
+            while (true) {
+                // Check collision: within 60 mins (approx 40px height)
+                const collision = placed.some(p => p.lane === lane && Math.abs(p.min - mins) < 60);
+                if (!collision) break;
+                lane++;
+            }
+
+            placed.push({ min: mins, lane });
+            offsets.set(item.id, lane);
+        });
+
+        return offsets;
+    };
+
     // Helper: Layout Calculation
     const calculateLayout = (items: LogEntry[], columnDate: Date) => {
         const dayStart = startOfDay(columnDate);
@@ -327,6 +358,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                         }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
                         const layoutLogs = calculateLayout(dayRawLogs, date);
+                        const narrowOffsets = !isSelected ? calculateNarrowOffsets(layoutLogs) : new Map();
 
                         // Ghosts (Only for selected)
                         const ghosts = isSelected ? getGhostsForDay(date) : [];
@@ -387,7 +419,6 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                                                         borderColor: LogColors.milk.text,
                                                     }}
                                                 >
-                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 mr-2">目安</span>
                                                     <span className="font-bold text-sm" style={{ color: LogColors.milk.text }}>{timeStr}頃</span>
                                                 </div>
                                             </div>
@@ -430,6 +461,12 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                                             else durationStr = `${m}m`;
                                         }
 
+                                        const narrowOffset = narrowOffsets.get(log.id) || 0;
+                                        // Shift 8px sideways per overlap level
+                                        // If not sleep, we shift. Sleep stays center? Or sleep also shifts if logic applies?
+                                        // Our calculateNarrowOffsets ONLY returns for non-sleep. So sleep offset is 0.
+                                        const narrowShift = narrowOffset * 8;
+
                                         return (
                                             <div
                                                 key={log.id}
@@ -445,7 +482,9 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                                                     height: (log.type === 'sleep') ? `${height}%` : 'auto',
                                                     left: isSelected ? `calc(3rem + ${log.left}%)` : '50%',
                                                     width: isSelected ? `calc((100% - 3.5rem) * ${log.width / 100})` : 'auto',
-                                                    transform: isSelected ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)') : (log.type === 'sleep' ? 'translateX(-50%)' : 'translateX(-50%) translateY(-50%)'),
+                                                    transform: isSelected
+                                                        ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)')
+                                                        : (log.type === 'sleep' ? 'translateX(-50%)' : `translateX(calc(-50% + ${narrowShift}px)) translateY(-50%)`),
                                                     minHeight: (log.type === 'sleep') ? '20px' : '0',
                                                     zIndex: isSelected ? (log.type === 'sleep' ? 5 : 20) : (log.type === 'sleep' ? 0 : 10)
                                                 }}
@@ -511,6 +550,6 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                     })}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
