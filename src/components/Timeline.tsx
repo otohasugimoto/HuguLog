@@ -67,37 +67,6 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
         return () => clearTimeout(timer);
     }, []); // Run once on mount
 
-    // Helper: Narrow View Layout (Dot shifting)
-    const calculateNarrowOffsets = (items: LogEntry[]) => {
-        // Only shift non-sleep items (dots)
-        const dots = items.filter(i => i.type !== 'sleep').sort((a, b) => {
-            const aStart = parseISO(a.startTime);
-            const bStart = parseISO(b.startTime);
-            return aStart.getTime() - bStart.getTime();
-        });
-
-        const offsets = new Map<string, number>();
-        const placed: { min: number, lane: number }[] = [];
-
-        dots.forEach(item => {
-            const d = parseISO(item.startTime);
-            const mins = getHours(d) * 60 + getMinutes(d);
-
-            let lane = 0;
-            while (true) {
-                // Check collision: within 60 mins (approx 40px height)
-                const collision = placed.some(p => p.lane === lane && Math.abs(p.min - mins) < 60);
-                if (!collision) break;
-                lane++;
-            }
-
-            placed.push({ min: mins, lane });
-            offsets.set(item.id, lane);
-        });
-
-        return offsets;
-    };
-
     // Helper: Layout Calculation
     const calculateLayout = (items: LogEntry[], columnDate: Date) => {
         const dayStart = startOfDay(columnDate);
@@ -358,7 +327,39 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                         }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
                         const layoutLogs = calculateLayout(dayRawLogs, date);
-                        const narrowOffsets = !isSelected ? calculateNarrowOffsets(layoutLogs) : new Map();
+
+                        // Narrow View: Adjust vertical check to prevent heavy overlap (dots only)
+                        // Requirement: dots should not overlap more than 4px
+                        let lastBottomPx = -100;
+                        const narrowViewLogs = layoutLogs.map(log => {
+                            const totalHeightPx = 960;
+                            const startPx = (log.startMins / 1440) * totalHeightPx;
+
+                            // Height: Sleep = duration, Dot = 10px
+                            let heightPx = 10;
+                            if (log.type === 'sleep') {
+                                heightPx = Math.max(((log.endMins - log.startMins) / 1440) * totalHeightPx, 10);
+                            }
+
+                            // Calculate visual top
+                            // Only apply collision logic to non-sleep items (dots)
+                            // Sleep bars should stay at true time to act as "background"
+                            let visualTopPx = startPx;
+
+                            if (log.type !== 'sleep') {
+                                if (visualTopPx < lastBottomPx - 4) {
+                                    visualTopPx = lastBottomPx - 4;
+                                }
+                                // Update lastBottom only for dots
+                                lastBottomPx = visualTopPx + heightPx;
+                            }
+
+                            const visualTopPercent = (visualTopPx / totalHeightPx) * 100;
+
+                            return { ...log, visualTopPercent };
+                        });
+
+                        const logsToRender = isSelected ? layoutLogs : narrowViewLogs;
 
                         // Ghosts (Only for selected)
                         const ghosts = isSelected ? getGhostsForDay(date) : [];
@@ -413,21 +414,26 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
 
                                         return (
                                             <div key={ghost.id} className="absolute left-[3rem] right-4 flex items-center justify-start opacity-100 pointer-events-none" style={{ top: `${top}%`, transform: 'translateY(-50%)' }}>
-                                                <div className="log-capsule flex items-center px-3 py-1.5 h-8 rounded-[10px] transition-colors border-2 border-dotted"
+                                                <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] transition-colors border-2 border-dotted"
                                                     style={{
                                                         backgroundColor: 'transparent',
                                                         borderColor: LogColors.milk.text,
+                                                        color: LogColors.milk.text
                                                     }}
                                                 >
-                                                    <span className="font-bold text-sm" style={{ color: LogColors.milk.text }}>{timeStr}頃</span>
+                                                    <Milk size={16} />
+                                                    <span className="font-bold text-sm">{timeStr}頃</span>
                                                 </div>
                                             </div>
                                         );
                                     })}
 
                                     {/* Real Logs */}
-                                    {layoutLogs.map(log => {
-                                        const top = (log.startMins / 1440) * 100;
+                                    {logsToRender.map((log: any) => {
+                                        const top = log.visualTopPercent !== undefined
+                                            ? log.visualTopPercent
+                                            : (log.startMins / 1440) * 100;
+
                                         // Fix: Allow height calculation for sleep even if not selected, for the narrow view bar
                                         const height = log.type === 'sleep'
                                             ? Math.max(log.endMins - log.startMins, 20) / 14.4
@@ -461,12 +467,6 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                                             else durationStr = `${m}m`;
                                         }
 
-                                        const narrowOffset = narrowOffsets.get(log.id) || 0;
-                                        // Shift 8px sideways per overlap level
-                                        // If not sleep, we shift. Sleep stays center? Or sleep also shifts if logic applies?
-                                        // Our calculateNarrowOffsets ONLY returns for non-sleep. So sleep offset is 0.
-                                        const narrowShift = narrowOffset * 8;
-
                                         return (
                                             <div
                                                 key={log.id}
@@ -482,9 +482,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                                                     height: (log.type === 'sleep') ? `${height}%` : 'auto',
                                                     left: isSelected ? `calc(3rem + ${log.left}%)` : '50%',
                                                     width: isSelected ? `calc((100% - 3.5rem) * ${log.width / 100})` : 'auto',
-                                                    transform: isSelected
-                                                        ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)')
-                                                        : (log.type === 'sleep' ? 'translateX(-50%)' : `translateX(calc(-50% + ${narrowShift}px)) translateY(-50%)`),
+                                                    transform: isSelected ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)') : (log.type === 'sleep' ? 'translateX(-50%)' : 'translateX(-50%) translateY(-50%)'),
                                                     minHeight: (log.type === 'sleep') ? '20px' : '0',
                                                     zIndex: isSelected ? (log.type === 'sleep' ? 5 : 20) : (log.type === 'sleep' ? 0 : 10)
                                                 }}
