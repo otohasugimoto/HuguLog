@@ -245,9 +245,17 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
         });
 
         const ghosts: GhostLog[] = [];
+        const now = new Date();
+        const isToday = isSameDay(date, now);
+        const currentMinutes = getHours(now) * 60 + getMinutes(now);
+
         Object.entries(pastFeedsByIndex).forEach(([index, data]) => {
             if (data.times.length === 0) return;
             const avgTime = Math.round(data.times.reduce((a, b) => a + b, 0) / data.times.length);
+
+            // Filter: If today, don't show ghosts in the past
+            if (isToday && avgTime <= currentMinutes) return;
+
             const avgAmount = data.amounts.length > 0 ? Math.round(data.amounts.reduce((a, b) => a + b, 0) / data.amounts.length) : 0;
             ghosts.push({ id: `ghost-${index}`, timeMinutes: avgTime, amount: avgAmount });
         });
@@ -374,19 +382,17 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                             className="absolute w-full border-t-2 z-10 pointer-events-none"
                                             style={{
                                                 top: `${((getHours(new Date()) * 60 + new Date().getMinutes()) / 1440) * 100}%`,
-                                                borderColor: 'var(--theme-primary)'
+                                                borderColor: '#FF3B30'
                                             }}
-                                        >
-                                            <div className="absolute -left-1 -top-1.5 w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--theme-primary)' }} />
-                                        </div>
+                                        />
                                     )}
 
                                     {/* Ghosts (Selected only) */}
                                     {ghosts.map(ghost => {
                                         const top = (ghost.timeMinutes / 1440) * 100;
                                         return (
-                                            <div key={ghost.id} className="absolute left-[3rem] right-4 flex items-center justify-start opacity-50 pointer-events-none" style={{ top: `${top}%` }}>
-                                                <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-11 rounded-full shadow-sm transition-colors"
+                                            <div key={ghost.id} className="absolute left-[3rem] right-4 flex items-center justify-start opacity-50 pointer-events-none" style={{ top: `${top}%`, transform: 'translateY(-50%)' }}>
+                                                <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors border-2 border-white"
                                                     style={{
                                                         backgroundColor: LogColors.milk.text,
                                                         color: '#ffffff',
@@ -403,6 +409,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                     {/* Real Logs */}
                                     {layoutLogs.map(log => {
                                         const top = (log.startMins / 1440) * 100;
+                                        // Fix: Allow height calculation for sleep even if not selected, for the narrow view bar
                                         const height = log.type === 'sleep'
                                             ? Math.max(log.endMins - log.startMins, 20) / 14.4
                                             : 0;
@@ -446,11 +453,12 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                                 )}
                                                 style={{
                                                     top: `${top}%`,
-                                                    height: (isSelected && log.type === 'sleep') ? `${height}%` : 'auto',
+                                                    // Use calculated height for sleep regardless of selection state
+                                                    height: (log.type === 'sleep') ? `${height}%` : 'auto',
                                                     left: isSelected ? `calc(3rem + ${log.left}%)` : '50%',
                                                     width: isSelected ? `calc((100% - 3.5rem) * ${log.width / 100})` : 'auto',
-                                                    transform: isSelected ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)') : 'translateX(-50%)',
-                                                    minHeight: (isSelected && log.type === 'sleep') ? '20px' : '0',
+                                                    transform: isSelected ? (log.type === 'sleep' ? 'none' : 'translateY(-50%)') : (log.type === 'sleep' ? 'translateX(-50%)' : 'translateX(-50%) translateY(-50%)'),
+                                                    minHeight: (log.type === 'sleep') ? '20px' : '0',
                                                     zIndex: isSelected ? (log.type === 'sleep' ? 5 : 20) : (log.type === 'sleep' ? 0 : 10)
                                                 }}
                                             >
@@ -493,9 +501,9 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                                     )
                                                 ) : (
                                                     // NARROW VIEW RENDERING (Dots Only)
-                                                    <div className="flex justify-center" title={format(parseISO(log.startTime), 'HH:mm')}>
+                                                    <div className={cn("flex justify-center", log.type === 'sleep' ? "h-full" : "")} title={format(parseISO(log.startTime), 'HH:mm')}>
                                                         {log.type === 'sleep' ? (
-                                                            <div className="w-2.5 h-2.5 rounded-full ring-2 ring-white" style={{ backgroundColor: LogColors.sleep.text }} />
+                                                            <div className="w-2.5 h-full rounded-full ring-2 ring-white" style={{ backgroundColor: LogColors.sleep.text }} />
                                                         ) : log.type === 'feed' ? (
                                                             <div className="w-2.5 h-2.5 rounded-full ring-2 ring-white" style={{ backgroundColor: LogColors.milk.text }} />
                                                         ) : (
