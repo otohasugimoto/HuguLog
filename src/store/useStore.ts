@@ -16,7 +16,7 @@ export const useStore = (familyId: string | null) => {
     // For now, keep settings local or sync them? User didn't specify. Let's keep local for simplicity/device preference.
     const [settings, setSettings] = useState<AppSettings>(() => {
         const stored = localStorage.getItem('hugulog_settings');
-        return stored ? JSON.parse(stored) : { showGhost: true, ghostMode: 'yesterday' };
+        return stored ? { ...JSON.parse(stored), feedingInterval: JSON.parse(stored).feedingInterval || 3.0 } : { showGhost: true, feedingInterval: 3.0 };
     });
 
     // Fetch Data

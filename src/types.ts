@@ -19,7 +19,8 @@ export interface LogEntry {
 
 export interface AppSettings {
     showGhost: boolean;
-    ghostMode: 'yesterday' | 'average';
+    // ghostMode replaced by feedingInterval
+    feedingInterval: number; // hours (e.g., 3.0)
 }
 
 export type DiaperType = 'pee' | 'poop' | 'both';

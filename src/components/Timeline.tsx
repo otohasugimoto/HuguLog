@@ -13,7 +13,7 @@ interface TimelineProps {
     logs: LogEntry[];
     babyId: string;
     showGhost: boolean;
-    ghostMode?: 'yesterday' | 'average';
+    feedingInterval?: number; // hours
     onLogClick: (log: LogEntry) => void;
     themeColor?: string;
 }
@@ -21,10 +21,9 @@ interface TimelineProps {
 interface GhostLog {
     id: string;
     timeMinutes: number; // 0-1440
-    amount: number;
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, ghostMode = 'average', onLogClick, themeColor = 'orange' }) => {
+export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, feedingInterval = 3.0, onLogClick, themeColor = 'orange' }) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -215,51 +214,36 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
     };
 
     // Ghost Calculation
-    const getGhostsForDay = (date: Date) => {
+    const getGhostsForDay = (date: Date): GhostLog[] => {
         if (!showGhost) return [];
 
-        let pastDays: Date[] = [];
-        if (ghostMode === 'yesterday') {
-            pastDays = [addDays(date, -1)];
-        } else {
-            // Average of past 3 days
-            pastDays = [1, 2, 3].map(d => addDays(date, -d));
+        // 1. Find last milk log
+        const lastFeedLog = logs
+            .filter(l => l.babyId === babyId && l.type === 'feed')
+            .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())[0];
+
+        if (!lastFeedLog) return [];
+
+        // 2. Calculate next feed time
+        // feedingInterval is in hours
+        const lastFeedVal = parseISO(lastFeedLog.startTime);
+        const nextFeedVal = new Date(lastFeedVal.getTime() + feedingInterval * 60 * 60 * 1000);
+
+        // 3. Condition:
+        // - Is the next feed time on the date we are checking?
+        if (!isSameDay(nextFeedVal, date)) {
+            return [];
         }
 
-        const pastFeedsByIndex: { [key: number]: { times: number[], amounts: number[] } } = {};
-
-        pastDays.forEach(pastDate => {
-            const daysLogs = logs
-                .filter(l => l.babyId === babyId && l.type === 'feed' && isSameDay(parseISO(l.startTime), pastDate))
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-
-            daysLogs.forEach((log, index) => {
-                if (!pastFeedsByIndex[index]) pastFeedsByIndex[index] = { times: [], amounts: [] };
-                const d = parseISO(log.startTime);
-                const minutes = getHours(d) * 60 + d.getMinutes();
-                pastFeedsByIndex[index].times.push(minutes);
-                if (log.amount !== undefined && log.amount !== null) {
-                    pastFeedsByIndex[index].amounts.push(Number(log.amount));
-                }
-            });
-        });
-
-        const ghosts: GhostLog[] = [];
         const now = new Date();
-        const isToday = isSameDay(date, now);
-        const currentMinutes = getHours(now) * 60 + getMinutes(now);
+        // - Is it in the future compared to now?
+        if (isBefore(nextFeedVal, now)) {
+            return []; // Don't show past predictions
+        }
 
-        Object.entries(pastFeedsByIndex).forEach(([index, data]) => {
-            if (data.times.length === 0) return;
-            const avgTime = Math.round(data.times.reduce((a, b) => a + b, 0) / data.times.length);
+        const minutes = getHours(nextFeedVal) * 60 + getMinutes(nextFeedVal);
 
-            // Filter: If today, don't show ghosts in the past
-            if (isToday && avgTime <= currentMinutes) return;
-
-            const avgAmount = data.amounts.length > 0 ? Math.round(data.amounts.reduce((a, b) => a + b, 0) / data.amounts.length) : 0;
-            ghosts.push({ id: `ghost-${index}`, timeMinutes: avgTime, amount: avgAmount });
-        });
-        return ghosts;
+        return [{ id: 'ghost-next-feed', timeMinutes: minutes }];
     };
 
     return (
@@ -390,6 +374,11 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                     {/* Ghosts (Selected only) */}
                                     {ghosts.map(ghost => {
                                         const top = (ghost.timeMinutes / 1440) * 100;
+                                        // Calculate HH:mm from minutes
+                                        const h = Math.floor(ghost.timeMinutes / 60);
+                                        const m = ghost.timeMinutes % 60;
+                                        const timeStr = `${h}:${m.toString().padStart(2, '0')}`;
+
                                         return (
                                             <div key={ghost.id} className="absolute left-[3rem] right-4 flex items-center justify-start opacity-50 pointer-events-none" style={{ top: `${top}%`, transform: 'translateY(-50%)' }}>
                                                 <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors border-2 border-white"
@@ -399,8 +388,7 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                                     }}
                                                 >
                                                     <Milk size={16} />
-                                                    <span className="font-bold text-sm">{ghost.amount}ml</span>
-                                                    <span className="text-[10px] bg-white/20 px-1 rounded ml-1">目安</span>
+                                                    <span className="font-bold text-sm">目安 {timeStr}頃</span>
                                                 </div>
                                             </div>
                                         );

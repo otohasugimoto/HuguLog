@@ -41,13 +41,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onPressFeed, onPressSleep,
                         className="flex flex-col items-center justify-center gap-1 w-16 py-1 rounded-xl transition-all active:scale-95"
                     >
                         <div
-                            className="w-[40px] h-[40px] flex items-center justify-center rounded-full transition-colors shadow-sm"
+                            className="p-3.5 rounded-full transition-colors shadow-sm"
                             style={{
                                 backgroundColor: item.colors.bg,
                                 color: item.colors.text
                             }}
                         >
-                            <item.icon size={24} style={{ color: item.colors.text }} />
+                            <item.icon size={28} style={{ color: item.colors.text }} />
                         </div>
                         <span className="text-xs font-bold text-gray-400">{item.label}</span>
                     </button>

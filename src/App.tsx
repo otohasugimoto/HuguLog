@@ -131,7 +131,7 @@ function App() {
               logs={logs}
               babyId={currentBabyId}
               showGhost={settings.showGhost}
-              ghostMode={settings.ghostMode}
+              feedingInterval={settings.feedingInterval}
               onLogClick={handleEditLog}
               themeColor={currentBaby?.themeColor}
             />

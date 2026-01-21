@@ -111,35 +111,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
                                 </button>
                             </div>
 
-                            {/* Ghost Mode Selection - Only show if Ghost is enabled */}
+                            {/* Feeding Interval Selection - Only show if Ghost is enabled */}
                             {settings.showGhost && (
                                 <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                                    <div className="text-xs font-bold text-gray-500 mb-2 px-1">ゴーストの基準</div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button
-                                            onClick={() => onUpdateSettings({ ghostMode: 'yesterday' })}
-                                            className={cn(
-                                                "py-2 px-3 rounded-lg text-sm font-bold transition-all",
-                                                settings.ghostMode === 'yesterday'
-                                                    ? "bg-white shadow-sm ring-1"
-                                                    : "text-gray-400 hover:bg-gray-100"
-                                            )}
-                                            style={settings.ghostMode === 'yesterday' ? { color: LogColors.milk.text, '--tw-ring-color': LogColors.milk.activeBg } as React.CSSProperties : undefined}
+                                    <div className="text-xs font-bold text-gray-500 mb-2 px-1">授乳間隔の目安</div>
+                                    <div className="relative">
+                                        <select
+                                            value={settings.feedingInterval}
+                                            onChange={(e) => onUpdateSettings({ feedingInterval: parseFloat(e.target.value) })}
+                                            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-gray-500 font-bold"
                                         >
-                                            昨日
-                                        </button>
-                                        <button
-                                            onClick={() => onUpdateSettings({ ghostMode: 'average' })}
-                                            className={cn(
-                                                "py-2 px-3 rounded-lg text-sm font-bold transition-all",
-                                                settings.ghostMode === 'average'
-                                                    ? "bg-white shadow-sm ring-1"
-                                                    : "text-gray-400 hover:bg-gray-100"
-                                            )}
-                                            style={settings.ghostMode === 'average' ? { color: LogColors.milk.text, '--tw-ring-color': LogColors.milk.activeBg } as React.CSSProperties : undefined}
-                                        >
-                                            過去3日平均
-                                        </button>
+                                            <option value={1.5}>1.5時間</option>
+                                            <option value={2.0}>2.0時間</option>
+                                            <option value={2.5}>2.5時間</option>
+                                            <option value={3.0}>3.0時間</option>
+                                            <option value={3.5}>3.5時間</option>
+                                            <option value={4.0}>4.0時間</option>
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                                        </div>
                                     </div>
                                 </div>
                             )}
