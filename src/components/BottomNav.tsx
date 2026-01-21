@@ -32,16 +32,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onPressFeed, onPressSleep,
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50 px-6 py-2 pb-safe">
-            <div className="flex justify-between items-center max-w-md mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)] rounded-t-[32px] z-50 px-6 py-4 pb-safe">
+            <div className="flex justify-center items-center gap-16 max-w-md mx-auto">
                 {navItems.map((item) => (
                     <button
                         key={item.label}
                         onClick={item.action}
-                        className="flex flex-col items-center justify-center gap-1 w-20 py-2 rounded-xl transition-all active:scale-95 hover:bg-gray-50"
+                        className="flex flex-col items-center justify-center gap-1 w-16 py-1 rounded-xl transition-all active:scale-95"
                     >
                         <div
-                            className="p-2 rounded-full transition-colors"
+                            className="w-[40px] h-[40px] flex items-center justify-center rounded-full transition-colors shadow-sm"
                             style={{
                                 backgroundColor: item.colors.bg,
                                 color: item.colors.text
@@ -49,7 +49,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onPressFeed, onPressSleep,
                         >
                             <item.icon size={24} style={{ color: item.colors.text }} />
                         </div>
-                        <span className="text-xs font-bold text-gray-500">{item.label}</span>
+                        <span className="text-xs font-bold text-gray-400">{item.label}</span>
                     </button>
                 ))}
             </div>
