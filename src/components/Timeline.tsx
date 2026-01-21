@@ -76,7 +76,8 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
         // 1. Process all items to calculate start/end mins
         const processedItems = items.map(log => {
             const logStart = parseISO(log.startTime);
-            let logEnd = log.endTime ? parseISO(log.endTime) : new Date();
+            // Fix: For non-sleep logs, endTime is irrelevant/same as start. Only sleep defaults to NOW if active.
+            let logEnd = log.endTime ? parseISO(log.endTime) : (log.type === 'sleep' ? new Date() : logStart);
 
             let startMins = 0;
             if (isAfter(logStart, dayStart)) {
@@ -296,11 +297,16 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                             if (l.babyId !== babyId) return false;
 
                             const s = parseISO(l.startTime);
-                            const e = l.endTime ? parseISO(l.endTime) : new Date();
 
-                            // Check overlap: Start < DayEnd AND End > DayStart
-                            // Note: We use < and > for overlap.
-                            return s < dayEnd && e > dayStart;
+                            if (l.type === 'sleep') {
+                                // For sleep, keep overlap logic
+                                const e = l.endTime ? parseISO(l.endTime) : new Date();
+                                return s < dayEnd && e > dayStart;
+                            } else {
+                                // For feed/diaper (point events), strictly check day
+                                // Note: we should use user's local day logic, isSameDay handles this if s and date are correct.
+                                return isSameDay(s, date);
+                            }
                         }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
                         const layoutLogs = calculateLayout(dayRawLogs, date);
