@@ -98,7 +98,8 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                 endMins,
                 width: 100,
                 left: 0,
-                zIndex: log.type === 'sleep' ? 1 : 10 // Default internal z preference
+                zIndex: log.type === 'sleep' ? 1 : 10, // Default internal z preference
+                labelOffsetPercent: 50 // Default center
             };
         });
 
@@ -106,10 +107,52 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
         const sleepItems = processedItems.filter(i => i.type === 'sleep');
         const otherItems = processedItems.filter(i => i.type !== 'sleep');
 
-        // 3. Configure Sleep Items (Background)
-        sleepItems.forEach(item => {
-            item.width = 100;
-            item.left = 0;
+        // 3. Configure Sleep Items (Background) & Calc Label Position
+        sleepItems.forEach(sleep => {
+            sleep.width = 100;
+            sleep.left = 0;
+
+            // Smart Label Positioning
+            // Find non-sleep items that overlap with this sleep item
+            const overlaps = otherItems.filter(other =>
+                other.startMins >= sleep.startMins && other.startMins <= sleep.endMins
+            ).sort((a, b) => a.startMins - b.startMins);
+
+            if (overlaps.length > 0) {
+                // Find largest gap
+                // Simplified "blocked" radius for other items (approx 24mins = 16px up/down)
+                const blockedRadius = 24;
+
+                let gaps: { start: number, end: number, size: number }[] = [];
+                let cursor = sleep.startMins;
+
+                overlaps.forEach(item => {
+                    // Gap from cursor to item top
+                    const itemTop = Math.max(sleep.startMins, item.startMins - blockedRadius);
+                    if (itemTop > cursor) {
+                        gaps.push({ start: cursor, end: itemTop, size: itemTop - cursor });
+                    }
+                    // Move cursor to item bottom
+                    cursor = Math.max(cursor, Math.min(sleep.endMins, item.startMins + blockedRadius));
+                });
+
+                // Final gap
+                if (cursor < sleep.endMins) {
+                    gaps.push({ start: cursor, end: sleep.endMins, size: sleep.endMins - cursor });
+                }
+
+                if (gaps.length > 0) {
+                    // Find largest
+                    const maxGap = gaps.reduce((prev, current) => (prev.size > current.size) ? prev : current);
+                    // Center in gap
+                    const gapCenter = maxGap.start + (maxGap.size / 2);
+                    // Convert to percentage relative to sleep height using integer math where possible
+                    const height = sleep.endMins - sleep.startMins;
+                    if (height > 0) {
+                        sleep.labelOffsetPercent = ((gapCenter - sleep.startMins) / height) * 100;
+                    }
+                }
+            }
         });
 
         // 4. Cluster Other Items (Foreground) & Apply Column Packing
@@ -117,15 +160,11 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
         let currentCluster: typeof otherItems = [];
 
         // 4a. Create Connect Groups
-        // We group items if they overlap at all with the *current group's extent*.
-        // Simple distinct clustering: if item starts after the max end of current cluster, it's a new cluster.
         otherItems.sort((a, b) => a.startMins - b.startMins).forEach(item => {
             if (currentCluster.length === 0) {
                 currentCluster.push(item);
             } else {
                 const clusterEnd = Math.max(...currentCluster.map(i => i.endMins));
-                // If this item starts purely after the entire cluster ends, break the cluster.
-                // Otherwise it connects (even if indirectly via "Chain of Overlaps").
                 if (item.startMins >= clusterEnd) {
                     clusters.push(currentCluster);
                     currentCluster = [item];
@@ -138,50 +177,36 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
 
         // 4b. Apply Column Packing per Cluster
         clusters.forEach(cluster => {
-            // Sort by start time (already sorted, but safe to ensure)
-            // If start times match, longer items should probably go first for better packing, but stability is fine.
             cluster.sort((a, b) => {
                 if (a.startMins !== b.startMins) return a.startMins - b.startMins;
                 return (b.endMins - b.startMins) - (a.endMins - a.startMins);
             });
 
-            const columns: number[] = []; // Stores the 'endMins' of the last item in each column.
+            const columns: number[] = [];
 
             cluster.forEach(item => {
-                // Find first column where this item fits (startMins >= column's endMins)
-                // V3 Update: Tolerate overlap up to 25% of the item's height.
                 let colIndex = -1;
-
                 for (let i = 0; i < columns.length; i++) {
                     const overlap = Math.max(0, columns[i] - item.startMins);
                     const tolerance = (item.endMins - item.startMins) * 0.25;
-
                     if (overlap <= tolerance) {
                         colIndex = i;
                         break;
                     }
                 }
-
                 if (colIndex === -1) {
-                    // Create new column
                     colIndex = columns.length;
                     columns.push(item.endMins);
                 } else {
-                    // Update existing column. Logic: new end is max of current end or item end.
-                    // Usually item.endMins > columns[i] since item starts later, but check max to be safe.
                     columns[colIndex] = Math.max(columns[colIndex], item.endMins);
                 }
-
-                // Store temporary layout data on the item
                 item.left = colIndex;
             });
 
             const maxColumns = columns.length;
-
-            // Finalize dimensions
             cluster.forEach(item => {
                 item.width = 100 / maxColumns;
-                item.left = (100 / maxColumns) * item.left; // Convert colIndex to percentage
+                item.left = (100 / maxColumns) * item.left;
             });
         });
 
@@ -400,6 +425,16 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                             return {};
                                         };
 
+                                        // Duration Calculation for Sleep
+                                        let durationStr = "ねんね";
+                                        if (log.type === 'sleep') {
+                                            const diffMins = log.endMins - log.startMins;
+                                            const h = Math.floor(diffMins / 60);
+                                            const m = diffMins % 60;
+                                            if (h > 0) durationStr = `${h}h${m > 0 ? ` ${m}m` : ''}`;
+                                            else durationStr = `${m}m`;
+                                        }
+
                                         return (
                                             <div
                                                 key={log.id}
@@ -423,10 +458,20 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, gho
                                                 {isSelected ? (
                                                     // WIDE VIEW RENDERING with Capsule Buttons
                                                     log.type === 'sleep' ? (
-                                                        <div className="log-capsule w-full h-full rounded-[10px] shadow-sm flex items-center justify-center p-1 transition-colors border-2 border-white" style={getLogStyle()}>
-                                                            <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="log-capsule w-full h-full rounded-[10px] shadow-sm transition-colors border-2 border-white relative"
+                                                            style={getLogStyle()}
+                                                        >
+                                                            {/* Absolute positioned content to support flexible Y positioning via labelOffsetPercent */}
+                                                            <div
+                                                                className="flex items-center gap-1 justify-center absolute left-0 right-0"
+                                                                style={{
+                                                                    top: log.labelOffsetPercent ? `${log.labelOffsetPercent}%` : '50%',
+                                                                    transform: 'translateY(-50%)'
+                                                                }}
+                                                            >
                                                                 <Moon size={16} />
-                                                                <span className="font-bold text-sm">ねんね</span>
+                                                                <span className="font-bold text-sm tracking-tight">{durationStr}</span>
                                                             </div>
                                                         </div>
                                                     ) : log.type === 'feed' ? (
