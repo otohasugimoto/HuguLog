@@ -380,15 +380,15 @@ export const Timeline: React.FC<TimelineProps> = ({ logs, babyId, showGhost, fee
                                         const timeStr = `${h}:${m.toString().padStart(2, '0')}`;
 
                                         return (
-                                            <div key={ghost.id} className="absolute left-[3rem] right-4 flex items-center justify-start opacity-50 pointer-events-none" style={{ top: `${top}%`, transform: 'translateY(-50%)' }}>
-                                                <div className="log-capsule flex items-center gap-2 px-3 py-1.5 h-8 rounded-[10px] shadow-sm transition-colors border-2 border-white"
+                                            <div key={ghost.id} className="absolute left-[3rem] right-4 flex items-center justify-start opacity-100 pointer-events-none" style={{ top: `${top}%`, transform: 'translateY(-50%)' }}>
+                                                <div className="log-capsule flex items-center px-3 py-1.5 h-8 rounded-[10px] transition-colors border-2 border-dotted"
                                                     style={{
-                                                        backgroundColor: LogColors.milk.text,
-                                                        color: '#ffffff',
+                                                        backgroundColor: 'transparent',
+                                                        borderColor: LogColors.milk.text,
                                                     }}
                                                 >
-                                                    <Milk size={16} />
-                                                    <span className="font-bold text-sm">目安 {timeStr}頃</span>
+                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 mr-2">目安</span>
+                                                    <span className="font-bold text-sm" style={{ color: LogColors.milk.text }}>{timeStr}頃</span>
                                                 </div>
                                             </div>
                                         );
